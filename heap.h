@@ -12,19 +12,17 @@ template <class T>
 class heap :
 	private DynamicArray<T>
 {
-	/*void repair_imported(void)
+
+	bool static cmp1(T const a, T const b)
 	{
-		for (long i = ((this->get_current() - 1) / 2 ); i >= 0; i--)
-		{
-		this->heap_down(i);
-		}
-	}*/
+		return a < b;
+	}
 
 protected:
-	void heap_up(long i, bool (*fun)(T const, T const))
+	void heap_up(long long i, bool (*fun)(T const, T const))
 	{
 		if (i == 0) return;
-		long j = ((i - 1) / 2);
+		long long j = ((i - 1) / 2);
 		if (fun(this->get_element(j), this->get_element(i)))
 		{
 			std::swap(this->get_element(i), this->get_element(j));
@@ -32,11 +30,11 @@ protected:
 		}
 	}
 
-	void heap_down(long i, bool (*fun)(T const, T const))
+	void heap_down(long long i, bool (*fun)(T const, T const))
 	{
-		if ((2 * i + 1) >= this->get_current()) return;
+		if ((2 * i + 1) > this->get_current_size()) return;
 
-		if ((2 * i + 2) >= this->get_current())
+		if ((2 * i + 1) == this->get_current_size())
 		{
 			if (fun(this->get_element(i), this->get_element((2 * i + 1))))
 			{
@@ -44,7 +42,7 @@ protected:
 			}
 		}
 		else {
-			long max;
+			long long max;
 			fun(this->get_element((2 * i + 1)), this->get_element((2 * i + 2))) ? max = (2 * i + 2) : max = (2 * i + 1);
 			if (fun(this->get_element(i), this->get_element(max)))
 			{
@@ -58,36 +56,45 @@ protected:
 public:
 	//friend int main();
 	heap() :DynamicArray<T>() {};
-	heap(T* arr, long size) :DynamicArray<T>(arr, size)
+	heap(T* arr, long long size) :DynamicArray<T>(arr, size)
 	{
-		for (long i = ((this->get_current() - 1) / 2); i >= 0; i--)
+		/*for (long long i = this->get_current_size(); i >= 0; i--)
 		{
-			this->heap_down(i);
+			this->heap_up(i, cmp1);
+		}*/
+		for (long long i = 0; i <= this->get_current_size(); i++)
+		{
+			this->heap_up(i, cmp1);
 		}
 	};
-	heap(DynamicArray<T> heap) :DynamicArray<T>(heap)
+	heap(DynamicArray<T> table) :DynamicArray<T>(table)
 	{
-		for (long i = ((this->get_current() - 1) / 2); i >= 0; i--)
+		/*for (long long i = this->get_current_size(); i >= 0; i--)
 		{
-			this->heap_down(i);
+			this->heap_up(i,cmp1);
+		}*/
+		for (long long i = 0; i <= this->get_current_size(); i++)
+		{
+			this->heap_up(i, cmp1);
 		}
 	};
 
 	void insert(T val, bool (*fun)(T const, T const))
 	{
 		this->add(val);
-		this->heap_up(this->get_current() - 1, fun);
+		this->heap_up(this->get_current_size() /*- 1*/, fun);
 	}
 
+	long long get_current_size(void) { return DynamicArray<T>::get_current_size(); }
 
 	T pop(bool (*fun)(T const, T const))
 	{
 		T tmp = this->get_element(0);
 		try
 		{
-			this->get_element(0) = this->pop_back();
+			std::swap(this->get_element(0),this->pop_back());
 		}
-		catch (const DynamicArray_exceptions & e)
+		catch (const my_exceptions_class & e)
 		{
 			throw e;
 		}
@@ -110,7 +117,7 @@ public:
 	{
 		DynamicArray<T>::print(fun);
 	}
-	void print(void (*fun)(T const), long dlg)
+	void print(void (*fun)(T const), long long dlg)
 	{
 		DynamicArray<T>::print(fun, dlg);
 	}
@@ -118,21 +125,41 @@ public:
 };
 
 
-template <class U>
+template <class T>
 class heap_sort_inplace :
-	protected heap<U>
+	protected heap<T>
 {
-	void inplace_sort(bool (*fun)(U const, U const))
+	bool greater;
+
+	bool static cmp1(int const a, int const b)
 	{
-		for (long i = this->get_current(); i >= 0; i--)
+		return a < b;
+	}
+
+	bool static cmp2(int const a, int const b)
+	{
+		return a > b;
+	}
+
+	void inplace_sort(bool (*fun)(T const, T const))
+	{
+		while (this->get_current_size()>0)
 		{
-			this->pop(i, fun);
+			this->pop(fun);
 		}
 	}
 
 public:
-	heap_sort_inplace(U* arr1, long size1) :heap<U>(arr1, size1) { this->inplace_sort(); };
-	heap_sort_inplace(DynamicArray<U> heap1) :heap<U>(heap1) { this->inplace_sort(); };
+	heap_sort_inplace(T* arr1, long long size1, bool greater = false) :heap<T>(arr1, size1), greater(greater)
+	{ 
+		if (this->greater) this->inplace_sort(cmp2);
+		else this->inplace_sort(cmp1);
+	};
+	heap_sort_inplace(DynamicArray<T> heap1, bool greater = false) :heap<T>(heap1), greater(greater)
+	{ 
+		if (this->greater) this->inplace_sort(cmp2);
+		else this->inplace_sort(cmp1);
+	};
 
 };
 #endif // !__HEAP

@@ -1,25 +1,63 @@
 #pragma once
+
+#ifndef __MY_EXCEPTIONS
+#define __MY_EXCEPTIONS
+
+#include <string>
+
+class my_exceptions_class
+{
+	short i;
+	std::string class_name;
+public:
+	explicit my_exceptions_class(short ii, std::string name) :i(ii), class_name(name) {};
+	std::string get_info(void)
+	{
+		switch (this->i)
+		{
+		case 1:
+			return "Error! " + this->class_name + " is empty!";
+			break;
+		case 2:
+			return "Error! You passed down value out of range of " + this->class_name + "!!!";
+			break;
+		case 3:
+			return "Error! You pass value smaller than 0! Please Kill yoursefl";
+			break;
+		case 4:
+			return "Error! You haven\'t more memory !!!!";
+			break;
+		default:
+			return "I don't recognize this error";
+			break;
+		}
+	}
+};
+#endif // !__MY_EXCEPTIONS
+
+
 #ifndef __LIST
 #define __LIST
-template<class I>
-class list_node {
-public:
-	I val;
-	list_node(list_node<I>* p, list_node<I>* n, I value) :prev(p), next(n), val(value) {};
-	list_node(I value) :list_node(NULL, NULL, value) {};
-	list_node<I>* next;
-	list_node<I>* prev;
-	~list_node() {  }
-};
 
 template<class T>
-class moja_lista
+class list
 {
+	template<class I>
+	class list_node {
+	public:
+		I val;
+		list_node(list_node<I>* p, list_node<I>* n, I value) :prev(p), next(n), val(value) {};
+		list_node(I value) :list_node(NULL, NULL, value) {};
+		list_node<I>* next;
+		list_node<I>* prev;
+		~list_node() {  }
+	};
+
 	long size;
 	list_node<T>* tail;
 	list_node<T>* head;
 public:
-	moja_lista(bool auto_type = true) :tail(NULL), head(NULL), size(0) {};
+	list() :tail(NULL), head(NULL), size(0) {};
 
 	void add_tail(const T& value)
 	{
@@ -28,7 +66,7 @@ public:
 			try {
 				this->tail = new list_node<T>(value);
 			}
-			catch (std::bad_alloc & ba) { throw; }
+			catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 			this->head = this->tail;
 			this->tail->val = value;
 
@@ -39,7 +77,7 @@ public:
 			try {
 				this->tail = new list_node<T>(value);
 			}
-			catch (std::bad_alloc & ba) { throw; }
+			catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 			tmp->next = this->tail;
 			this->tail->prev = tmp;
 		}
@@ -53,7 +91,7 @@ public:
 			try {
 				this->head = new list_node<T>(value);
 			}
-			catch (std::bad_alloc & ba) { throw; }
+			catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 			this->tail = this->head;
 			this->head->val = value;
 		}
@@ -63,7 +101,7 @@ public:
 			try {
 				this->head = new list_node<T>(value);
 			}
-			catch (std::bad_alloc & ba) { throw; }
+			catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 			tmp->prev = this->head;
 			this->head->next = tmp;
 		}
@@ -78,7 +116,7 @@ public:
 			try {
 				this->head = new list_node<T>(value);
 			}
-			catch (std::bad_alloc & ba) { throw; }
+			catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 			this->tail = this->head;
 			this->head->val = value;
 			flag = true;
@@ -96,14 +134,14 @@ public:
 						try {
 							this->head = scroll->prev = new list_node<T>(NULL, scroll, value);
 						}
-						catch (std::bad_alloc & ba) { throw; }
+						catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 					}
 					else
 					{
 						try {
 							tmp->next = scroll->prev = new list_node<T>(scroll->prev, tmp->next, value);
 						}
-						catch (std::bad_alloc & ba) { throw; }
+						catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 					}
 
 					flag = true; break;
@@ -116,7 +154,7 @@ public:
 			try {
 				this->tail = this->tail->next = new list_node<T>(this->tail, NULL, value);
 			}
-			catch (std::bad_alloc & ba) { throw; }
+			catch (std::bad_alloc & ba) { throw my_exceptions_class(4,"List"); }
 			flag = true;
 		}
 		size++;
@@ -161,7 +199,7 @@ public:
 			}
 			scroll = scroll->next;
 		}
-		throw std::invalid_argument("Don't find this value");
+		throw my_exceptions_class(2,"List");
 	}
 
 	long find_position(const T& value, bool (*funkcja) (const T  a, const T  b))// throw std::invalid_argument
@@ -174,12 +212,12 @@ public:
 			position++;
 			scroll = scroll->next;
 		}
-		throw std::invalid_argument("Don't find this value");
+		throw my_exceptions_class(2,"List");
 	}
 
-	T& operator[] (const long& pos)// throw std::out_of_range
+	long long get_element(long long pos)// throw std::out_of_range
 	{
-		if (pos < 0 || pos > this->size) throw std::out_of_range("Don't find this value");
+		if (pos < 0 || pos > this->size) throw my_exceptions_class(2, "List");
 		if (pos < (this->size / 2))
 		{
 			list_node<T>* scroll = this->head;
@@ -189,7 +227,7 @@ public:
 		else
 		{
 			list_node<T>* scroll = this->tail;
-			for (long i = 0; i < (this->size - pos); i++)  scroll = scroll->prev;
+			for (long i = 0; i < (this->size - pos - 1); i++)  scroll = scroll->prev;
 			return scroll->val;
 		}
 	}
@@ -352,7 +390,7 @@ public:
 	}
 
 
-	~moja_lista() { };
+	~list() { };
 };
 #endif // !__LIST
 
